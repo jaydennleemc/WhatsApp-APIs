@@ -1,4 +1,4 @@
-const { getQrCode: clientGetQrCode } = require('../whatsappClient');
+const { getQrCode: clientGetQrCode, isQrCodeAvailable: clientIsQrCodeAvailable } = require('../whatsappClient');
 const { isAuthenticated: utilIsAuthenticated } = require('../utils/utils');
 const { AppError } = require('../middleware/errorHandler');
 const { logInfo, logError, logDebug } = require('../utils/logger');
@@ -51,6 +51,31 @@ class AuthService {
             } else {
                 throw new AppError(
                     error.message || 'Failed to check authentication status',
+                    500,
+                    'error'
+                );
+            }
+        }
+    }
+    
+    /**
+     * Check if QR code is currently available
+     * @returns {boolean} QR code availability status
+     */
+    static isQrCodeAvailable() {
+        try {
+            logDebug('Checking QR code availability');
+            const available = clientIsQrCodeAvailable();
+            logInfo('QR code availability checked', { available });
+            return available;
+        } catch (error) {
+            logError('Error checking QR code availability', { error: error.message });
+            
+            if (error instanceof AppError) {
+                throw error;
+            } else {
+                throw new AppError(
+                    error.message || 'Failed to check QR code availability',
                     500,
                     'error'
                 );

@@ -5,37 +5,59 @@ const fs = require('fs');
 const path = require('path');
 
 class AuthenticateController {
-    static async isAuthenticated(req, res, next) {
+    static async handleRoot(req, res, next) {
         try {
-            const authenticated = await AuthService.isAuthenticated();
-            if (authenticated) {
-                return sendSuccessResponse(res, 200, 'WhatsApp authenticated', { authenticated });
-            } else {
-                return sendSuccessResponse(res, 200, 'WhatsApp not authenticated', { authenticated });
-            }
+            // The HTML file contains all the necessary logic to check authentication status
+            // and display the appropriate content (QR code or authenticated message)
+            const templatePath = path.join(__dirname, '../../index.html');
+            const html = fs.readFileSync(templatePath, 'utf8');
+            
+            res.send(html);
         } catch (error) {
             next(error); // Pass error to error handling middleware
         }
     }
-
-    static async authWhatsApp(req, res, next) {
+    
+    // Get QR code endpoint
+    static async getQrCode(req, res, next) {
         try {
-            const qrcodeStr = AuthService.getQrCode();
-            
-            // Read the template HTML file
-            const templatePath = path.join(__dirname, '../../index.html');
-            let html = fs.readFileSync(templatePath, 'utf8');
-            
-            // Replace the QR code placeholder in the JavaScript with the actual QR code
-            html = html.replace(
-                'text: "https://webisora.com",',
-                `text: "${qrcodeStr}",`
-            );
-            
-            // Send the modified HTML
-            res.send(html);
+            const qrCode = AuthService.getQrCode();
+            res.send(qrCode);
         } catch (error) {
-            next(error); // Pass error to error handling middleware
+            next(error);
+        }
+    }
+    
+    // Check authentication status endpoint
+    static async checkStatus(req, res, next) {
+        try {
+            const authenticated = await AuthService.isAuthenticated();
+            res.json({
+                success: true,
+                message: authenticated ? 'WhatsApp authenticated' : 'WhatsApp not authenticated',
+                data: { authenticated },
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+    
+    // Check QR code availability endpoint
+    static async checkQrCodeAvailability(req, res, next) {
+        try {
+            const qrCodeAvailable = AuthService.isQrCodeAvailable();
+            const qrCode = qrCodeAvailable ? AuthService.getQrCode() : null;
+            res.json({
+                success: true,
+                data: { 
+                    qrCodeAvailable: !!qrCodeAvailable,  // Ensure it's a boolean
+                    qrCode: qrCodeAvailable ? qrCode : null
+                },
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            next(error);
         }
     }
 }

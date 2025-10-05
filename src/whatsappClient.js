@@ -12,6 +12,7 @@ const client = new Client({
     }),
     puppeteer: {
         headless: true,
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined, // Use system Chromium if available
         args: [
             '--no-sandbox', 
             '--disable-setuid-sandbox',
@@ -151,8 +152,13 @@ const getQrCode = () => {
     return qrCode;
 };
 
+const isQrCodeAvailable = () => {
+    return qrCode && qrCode.length > 0;
+};
+
 module.exports = {
     InitWhatsAppClient,
     sendWhatsAppMessage,
     getQrCode,
+    isQrCodeAvailable,
 };

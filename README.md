@@ -12,6 +12,9 @@ Welcome to the WhatsApp API Server, a lightweight and efficient server applicati
 - **Input Validation** for secure and reliable message sending.
 - **Comprehensive Logging** with Winston for monitoring and debugging.
 - **Error Handling** with consistent response formats.
+- **Modern UI for Authentication** with Tailwind CSS styling.
+- **Fixed Header and Footer** for improved UX.
+- **QR Code Availability Checking** to prevent confusion with example QR codes.
 
 ## Project Structure
 
@@ -21,20 +24,19 @@ WhatsApp-APIs/
 ├── .gitignore
 ├── .prettierrc
 ├── Dockerfile
-├── index.html
+├── index.html              # Updated authentication page with Tailwind CSS
 ├── index.js               # Application entry point
 ├── package.json
 ├── README.md              # This file
 ├── status.json            # Authentication status storage
 ├── update_tasks.md        # Update tasks documentation
 ├── structure_update_tasks.md # Structure update tasks
-├── API_Specification.md   # Detailed API documentation
-├── Technical_Specification.md # Technical documentation
+# (API_Specification.md and Technical_Specification.md have been consolidated into this README.md file)
 └── src/
     ├── config/
-    │   └── config.js      # Configuration management
+    │   └── default.js      # Configuration management
     ├── controllers/
-    │   ├── authController.js    # Authentication controller
+    │   ├── authController.js    # Authentication controller (updated)
     │   └── messageController.js # Message controller
     ├── middleware/
     │   ├── auth.js              # Authentication middleware
@@ -43,9 +45,9 @@ WhatsApp-APIs/
     │   ├── rateLimiter.js       # Rate limiting middleware
     │   └── validation.js        # Validation middleware
     ├── routes/
-    │   └── apiRoutes.js         # API route definitions
+    │   └── apiRoutes.js         # API route definitions (updated)
     ├── services/
-    │   ├── authService.js       # Authentication service
+    │   ├── authService.js       # Authentication service (updated)
     │   └── messageService.js    # Message service
     ├── utils/
     │   ├── errors.js            # Error utility functions
@@ -53,7 +55,7 @@ WhatsApp-APIs/
     │   └── utils.js             # General utility functions
     ├── validations/
     │   └── messageValidation.js # Request validation schemas
-    └── whatsappClient.js        # WhatsApp client wrapper
+    └── whatsappClient.js        # WhatsApp client wrapper (updated)
 ```
 
 ## Getting Started
@@ -79,7 +81,7 @@ npm install
 
 3. Create and configure environment variables:
 ```bash
-cp .env.example .env
+cp .env .env.local
 ```
 
 4. Start the development server:
@@ -113,7 +115,7 @@ See `.env` file for all configurable options:
 
 ## API Documentation
 
-The complete API documentation is available in [API_Specification.md](API_Specification.md).
+The complete API documentation is available earlier in this README.md file under the "API Specification" section.
 
 ### Base URL
 ```
@@ -132,7 +134,11 @@ Check WhatsApp authentication status.
 
 #### GET /auth/qrcode
 Get QR code for WhatsApp authentication.
-- **Response**: HTML page with QR code to scan
+- **Response**: QR code string for authentication
+
+#### GET /auth/qrcode/availability
+Check if QR code is currently available.
+- **Response**: QR code availability status
 
 #### POST /messages
 Send a message to a WhatsApp number. Supports both text messages and future media file uploads.
@@ -141,6 +147,35 @@ Send a message to a WhatsApp number. Supports both text messages and future medi
   - `message` or `msg` (required): Message content (max 4096 characters)
 - **Response**: Message sent confirmation with message ID
 - **Future Enhancement**: Media/file upload support planned
+
+## Updated Features
+
+### 1. Modern Authentication UI with Tailwind CSS
+- Complete redesign of the authentication page (`index.html`)
+- Responsive layout with Tailwind CSS styling
+- Animated elements and visual indicators
+- Improved user experience with clear instructions
+- Fixed header and footer for consistent navigation
+
+### 2. QR Code Availability System
+- New endpoint `/auth/qrcode/availability` to check if QR code is ready
+- Client-side polling for QR code availability
+- Loading state shown while QR code is generating
+- Eliminates confusion with example QR codes
+- Only displays actual QR code when available from the WhatsApp client
+
+### 3. Fixed Header and Footer
+- Header fixed at the top of the page
+- Footer fixed at the bottom of the page
+- Improved navigation experience
+- Better content spacing with padding adjustments
+- Consistent UI elements accessible at all times
+
+### 4. Enhanced User Experience
+- Initial loading state with spinner animation
+- Clear status messages throughout the authentication process
+- Better error handling and user feedback
+- Improved visual design with WhatsApp-inspired color scheme
 
 ## Architecture
 
@@ -153,6 +188,7 @@ This project follows modern Node.js and Express.js best practices:
 - **Rate Limiting**: Protection against API abuse
 - **Logging**: Structured logging with Winston
 - **Session Management**: Persistent WhatsApp sessions with LocalAuth
+- **Frontend Enhancement**: Modern UI with Tailwind CSS and improved UX
 
 ## Security Features
 
@@ -160,6 +196,7 @@ This project follows modern Node.js and Express.js best practices:
 - Rate limiting per IP address
 - Session persistence with secure storage
 - Error message sanitization
+- Authentication via WhatsApp Web QR code scanning
 
 ## Development
 
@@ -342,23 +379,46 @@ Checks if the WhatsApp Web client is authenticated.
 #### Get Authentication QR Code
 
 ##### GET /auth/qrcode
-Returns a modern, responsive HTML page with a QR code for WhatsApp authentication.
+Returns the QR code string for WhatsApp authentication.
 
 **Response:**
-- Returns HTML page with a Tailwind CSS-styled interface containing the QR code
-- The page includes clear instructions on how to scan the QR code
-- When authenticated, session is stored and subsequent requests work
-- The page features:
-  - WhatsApp-inspired design with green color scheme
-  - Step-by-step instructions for scanning
-  - Security information and status indicators
-  - Animated QR code container for visibility
-  - Responsive layout for all device sizes
+- Returns QR code string
+- The QR code can be used to generate a QR image for scanning
+- When scanned and authenticated, session is stored and subsequent requests work
 
 **Response Example:**
 - HTTP 200 OK
-- Content-Type: text/html
-- Returns a complete HTML page with the authentication interface
+- Content-Type: text/plain
+- Returns a QR code string that can be used to generate a QR code image
+
+#### Check QR Code Availability
+
+##### GET /auth/qrcode/availability
+Checks if a QR code is currently available for authentication.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "qrCodeAvailable": true,
+    "qrCode": "QR_CODE_STRING_HERE"
+  },
+  "timestamp": "2025-10-05T14:48:00.000Z"
+}
+```
+
+**Not Available Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "qrCodeAvailable": false,
+    "qrCode": null
+  },
+  "timestamp": "2025-10-05T14:48:00.000Z"
+}
+```
 
 #### Send Message
 
@@ -482,7 +542,7 @@ All API responses follow a consistent structure:
 
 #### Phone Number Validation
 - Must be in international format (e.g., +1234567890)
-- Must match regex pattern: `/^\+?[1-9]\d{1,14}$/`
+- Must match regex pattern: `/^\\+?[1-9]\\d{1,14}$/`
 - Cannot be empty
 
 #### Message Content Validation
@@ -525,17 +585,24 @@ curl -X GET http://localhost:3000/
 
 **Check Status:**
 ```bash
-curl -X GET http://localhost:3000/status
+curl -X GET http://localhost:3000/auth/status
 ```
 
 **Get QR Code:**
 ```bash
-curl -X GET http://localhost:3000/auth
+curl -X GET http://localhost:3000/auth/qrcode
+```
+
+**Check QR Code Availability:**
+```bash
+curl -X GET http://localhost:3000/auth/qrcode/availability
 ```
 
 **Send Message:**
 ```bash
-curl -X GET "http://localhost:3000/send?num=%2B1234567890&msg=Hello%20World"
+curl -X POST http://localhost:3000/messages \\
+  -H "Content-Type: application/json" \\
+  -d '{"phoneNumber": "+1234567890", "message": "Hello World"}'
 ```
 
 ### Security Considerations
@@ -573,6 +640,8 @@ The WhatsApp API Server is designed to provide a simple RESTful interface to int
 - Ensure reliable session persistence and authentication
 - Implement proper error handling and logging
 - Follow Node.js and Express.js best practices
+- Provide an improved UI/UX with Tailwind CSS and fixed layout
+- Implement QR code availability checks to prevent user confusion
 
 ### Architecture
 
@@ -610,6 +679,7 @@ Client Request → Middleware (Validation/Logging) → Controller → Service �
 - **express-validator**: Request validation middleware
 - **winston**: Logging library
 - **dotenv**: Environment variable management
+- **Tailwind CSS**: Frontend styling framework (via CDN)
 
 #### Development Dependencies
 - **nodemon**: Development server with auto-restart
@@ -620,51 +690,6 @@ Client Request → Middleware (Validation/Logging) → Controller → Service �
 - **Session Storage**: Local file-based session persistence
 - **File System**: Configuration files and logs
 
-### Directory Structure
-
-```
-WhatsApp-APIs/
-├── config/                   # Application configuration
-│   └── default.js            # Main configuration file
-├── src/                      # Source code
-│   ├── controllers/          # Request handlers
-│   │   ├── authController.js # Authentication controller
-│   │   └── messageController.js # Message controller
-│   ├── middleware/           # Express middleware
-│   │   ├── auth.js           # Authentication middleware
-│   │   ├── errorHandler.js   # Error handling middleware
-│   │   ├── logger.js         # Logging middleware
-│   │   ├── rateLimiter.js    # Rate limiting middleware
-│   │   └── validation.js     # Validation middleware
-│   ├── routes/               # API route definitions
-│   │   └── apiRoutes.js      # API route definitions
-│   ├── services/             # Business logic
-│   │   ├── authService.js    # Authentication service
-│   │   └── messageService.js # Message service
-│   ├── utils/                # Utility functions
-│   │   ├── errors.js         # Error utility functions
-│   │   ├── logger.js         # Logging utility
-│   │   └── utils.js          # General utility functions
-│   ├── validations/          # Request validation schemas
-│   │   └── messageValidation.js # Request validation schemas
-│   └── whatsappClient.js     # WhatsApp client wrapper
-├── docs/                     # Documentation files
-├── tests/                    # Test files
-├── uploads/                  # File uploads (future use)
-├── logs/                     # Log files
-├── .env                      # Environment variables example
-├── .env.local                # Local environment variables (git-ignored)
-├── .gitignore                # Git ignore patterns
-├── .prettierrc               # Prettier configuration
-├── Dockerfile                # Docker configuration
-├── index.html                # WhatsApp authentication page
-├── index.js                  # Application entry point
-├── package-lock.json         # Dependency lock file
-├── package.json              # Project manifest
-├── README.md                 # Project documentation
-└── status.json               # Authentication status storage
-```
-
 ### API Endpoints (Updated)
 
 #### Health Check
@@ -673,6 +698,7 @@ WhatsApp-APIs/
 #### Authentication Endpoints
 - **GET /auth/status** - Check WhatsApp authentication status
 - **GET /auth/qrcode** - Get QR code for WhatsApp authentication
+- **GET /auth/qrcode/availability** - Check if QR code is currently available
 
 #### Messaging Endpoints
 - **POST /messages** - Send a message to a WhatsApp number
@@ -714,8 +740,9 @@ WhatsApp-APIs/
 - Robust error handling and logging
 - Proper client initialization and state management
 - Message acknowledgment tracking
+- QR code availability tracking
 
-#### 3. Configuration Management (config/config.js)
+#### 3. Configuration Management (config/default.js)
 
 **Purpose**: Centralized application configuration
 - Environment variable parsing
@@ -765,6 +792,7 @@ WhatsApp-APIs/
 ##### Authentication Service (services/authService.js)
 - Authentication status checking
 - QR code retrieval
+- QR code availability checking
 - Session management abstraction
 - Error handling and logging
 
@@ -775,6 +803,7 @@ WhatsApp-APIs/
 - Request/response formatting
 - Service integration
 - Error propagation to middleware
+- New endpoints for QR code availability
 
 ##### Message Controller (controllers/messageController.js)
 - HTTP interface for message endpoints
@@ -791,6 +820,7 @@ WhatsApp-APIs/
 - Controller method assignment
 - Response formatting
 - Support for both legacy and new parameter names for backward compatibility
+- New routes for QR code availability checks
 
 ### Configuration
 

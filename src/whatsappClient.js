@@ -1,52 +1,150 @@
-const { Client } = require('whatsapp-web.js');
-const { writeAuthenticated } = require('./util/utils');
+const { Client, LocalAuth } = require('whatsapp-web.js');
+const { writeAuthenticated } = require('./utils/utils');
+const { logInfo, logError, logDebug } = require('./utils/logger');
 
 let clientReady = false;
 let qrCode = '';
+let clientInitializing = false;
 const client = new Client({
+    authStrategy: new LocalAuth({
+        clientId: "whatsapp-api", // Unique client session name
+        dataPath: "./session-data" // Directory to store session data
+    }),
     puppeteer: {
-        args: ['--no-sandbox'],
+        headless: true,
+        args: [
+            '--no-sandbox', 
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--disable-gpu',
+            '--single-process'  // This can help with ARM64 compatibility
+        ]
     },
+    webVersionCache: {
+        type: 'remote',
+        remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/' + (Math.random() > 0.5 ? 'fiber' : 'titanium')
+    }
 });
 
 client.on('qr', (qr) => {
-    console.log('QR RECEIVED', qr);
+    logInfo('QR code received for authentication');
     qrCode = qr;
 });
 
+client.on('authenticated', () => {
+    logInfo('WhatsApp authentication successful');
+    writeAuthenticated({
+        authenticated: true,
+    });
+});
+
+client.on('auth_failure', (message) => {
+    logError('WhatsApp authentication failure', { error: message });
+    writeAuthenticated({
+        authenticated: false,
+    });
+    clientReady = false;
+});
+
 client.on('ready', () => {
-    console.log('Client is ready!');
+    logInfo('WhatsApp client is ready');
     clientReady = true;
+    clientInitializing = false;
     writeAuthenticated({
         authenticated: true,
     });
 });
 
 client.on('disconnected', (reason) => {
-    console.log('*** Client was logged out', reason);
+    logInfo('WhatsApp client disconnected', { reason });
     clientReady = false;
+    clientInitializing = false;
     writeAuthenticated({
         authenticated: false,
     });
+});
+
+client.on('change_state', (state) => {
+    logDebug('WhatsApp connection state changed', { state });
+    if (state === 'CONFLICT') {
+        // When conflict state occurs, the client has been logged out from another device
+        clientReady = false;
+        writeAuthenticated({
+            authenticated: false,
+        });
+    }
 });
 
 client.on('message', (msg) => {
-    console.log('MESSAGE RECEIVED', msg);
+    logDebug('Message received', { 
+        from: msg.from, 
+        body: msg.body ? msg.body.substring(0, 50) + '...' : 'media/message' 
+    });
 });
 
-const InitWhatsAppClient = () => {
-    console.log('Init WhatsApp Web Client');
-    client.initialize();
-    writeAuthenticated({
-        authenticated: false,
-    });
+client.on('message_ack', (msg, ack) => {
+    logDebug('Message acknowledgment received', { messageId: msg.id._serialized, ack });
+});
+
+const InitWhatsAppClient = async () => {
+    if (clientInitializing) {
+        logInfo('WhatsApp client is already initializing');
+        return;
+    }
+    
+    logInfo('Initializing WhatsApp Web Client');
+    clientInitializing = true;
+    
+    try {
+        await client.initialize();
+        writeAuthenticated({
+            authenticated: false,
+        });
+        logInfo('WhatsApp client initialized successfully');
+    } catch (error) {
+        logError('Error initializing WhatsApp client', { error: error.message });
+        clientInitializing = false;
+        writeAuthenticated({
+            authenticated: false,
+        });
+    }
 };
 
-const sendWhatsAppMessage = async (number, message) => {
+const sendWhatsAppMessage = async (number, message, options = {}) => {
     if (!clientReady) {
-        throw new Error('Client is not ready');
+        const error = new Error('Client is not ready');
+        logError('Failed to send message - client not ready', { number, message: message?.substring(0, 50) + '...' });
+        throw error;
     }
-    return client.sendMessage(`${number}@.us`, message);
+    
+    // Validate and format the phone number
+    let formattedNumber = number.toString().replace(/\D/g, ''); // Remove non-digit characters
+    
+    // Ensure the number starts with the international prefix (+)
+    if (!formattedNumber.startsWith('+')) {
+        // Add '+' prefix if not present
+        formattedNumber = '+' + formattedNumber;
+    }
+    
+    try {
+        const response = await client.sendMessage(formattedNumber, message, options);
+        logInfo('Message sent successfully', { 
+            messageId: response.id._serialized, 
+            to: formattedNumber,
+            message: message?.substring(0, 50) + '...' 
+        });
+        return response;
+    } catch (error) {
+        logError('Error sending WhatsApp message', { 
+            error: error.message, 
+            number: formattedNumber,
+            message: message?.substring(0, 50) + '...'
+        });
+        throw error;
+    }
 };
 
 const getQrCode = () => {

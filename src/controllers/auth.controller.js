@@ -1,6 +1,6 @@
-const AuthService = require('../services/authService');
+const AuthService = require('../services/auth.service');
 const { AppError } = require('../middleware/errorHandler');
-const { sendSuccessResponse } = require('../utils/errors');
+const { sendSuccessResponse } = require('../utils/errors.util');
 const fs = require('fs');
 const path = require('path');
 

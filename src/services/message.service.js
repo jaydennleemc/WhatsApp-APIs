@@ -1,6 +1,6 @@
 const { sendWhatsAppMessage: clientSendWhatsAppMessage, getQrCode: clientGetQrCode } = require('../whatsappClient');
 const { AppError } = require('../middleware/errorHandler');
-const { logInfo, logError } = require('../utils/logger');
+const { logInfo, logError } = require('../utils/logger.util');
 
 class MessageService {
     /**

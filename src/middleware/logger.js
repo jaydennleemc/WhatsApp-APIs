@@ -1,4 +1,4 @@
-const { logInfo, logError } = require('../utils/logger');
+const { logInfo, logError } = require('../utils/logger.util');
 
 const logger = (req, res, next) => {
     const startTime = Date.now();

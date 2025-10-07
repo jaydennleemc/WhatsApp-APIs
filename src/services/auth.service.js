@@ -1,7 +1,7 @@
 const { getQrCode: clientGetQrCode, isQrCodeAvailable: clientIsQrCodeAvailable } = require('../whatsappClient');
-const { isAuthenticated: utilIsAuthenticated } = require('../utils/utils');
+const { isAuthenticated: utilIsAuthenticated } = require('../utils/common.util');
 const { AppError } = require('../middleware/errorHandler');
-const { logInfo, logError, logDebug } = require('../utils/logger');
+const { logInfo, logError, logDebug } = require('../utils/logger.util');
 
 class AuthService {
     /**

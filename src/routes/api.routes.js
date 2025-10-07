@@ -1,9 +1,10 @@
 const router = require('express').Router();
-const { sendMessageValidation } = require('../validations/messageValidation');
+const { sendMessageValidation } = require('../validations/message.validation');
 const handleValidationErrors = require('../middleware/validation');
+const apiKeyAuth = require('../middleware/auth');
 
-const AuthenticateController = require('../controllers/authController');
-const MessageController = require('../controllers/messageController');
+const AuthenticateController = require('../controllers/auth.controller');
+const MessageController = require('../controllers/message.controller');
 
 // Configuration endpoint for base path
 router.get('/config/base-path', (req, res) => {
@@ -18,7 +19,7 @@ router.get('/auth/status', AuthenticateController.checkStatus);
 router.get('/auth/qrcode', AuthenticateController.getQrCode);
 router.get('/auth/qrcode/availability', AuthenticateController.checkQrCodeAvailability);
 
-// Messaging endpoints
-router.post('/messages', sendMessageValidation, handleValidationErrors, MessageController.sendMessage);
+// Messaging endpoints - protected with API key authentication
+router.post('/message', apiKeyAuth, sendMessageValidation, handleValidationErrors, MessageController.sendMessage);
 
 module.exports = router;

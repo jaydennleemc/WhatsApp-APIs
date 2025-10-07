@@ -1,6 +1,6 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const { writeAuthenticated } = require('./utils/utils');
-const { logInfo, logError, logDebug } = require('./utils/logger');
+const { writeAuthenticated } = require('./utils/common.util');
+const { logInfo, logError, logDebug } = require('./utils/logger.util');
 
 let clientReady = false;
 let qrCode = '';

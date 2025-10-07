@@ -1,6 +1,6 @@
-const MessageService = require('../services/messageService');
+const MessageService = require('../services/message.service');
 const { AppError } = require('../middleware/errorHandler');
-const { sendSuccessResponse } = require('../utils/errors');
+const { sendSuccessResponse } = require('../utils/errors.util');
 
 class MessageController {
     static async sendMessage(req, res, next) {

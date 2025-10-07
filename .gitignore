@@ -148,3 +148,10 @@ node_modules/.cache/
 
 # PlatformIO
 .platformio/
+
+# Spec
+specs/
+.qwen/
+.vscode/
+.cursor/
+.specify/

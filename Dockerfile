@@ -1,39 +1,56 @@
-FROM  node:14.16.0-buster-slim
+FROM node:22-alpine
 
-RUN  apt-get update \
-    && apt-get install sudo -y \
-    && apt-get install nano -y \
-    && apt-get install -y wget gnupg ca-certificates procps libxss1 \
-    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
-    && apt-get update \
-    # We install Chrome to get all the OS level dependencies, but Chrome itself
-    # is not actually used as it's packaged in the node puppeteer library.
-    # Alternatively, we could could include the entire dep list ourselves
-    # (https://github.com/puppeteer/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)
-    # but that seems too easy to get out of date.
-    && apt-get install -y google-chrome-stable \
-    && rm -rf /var/lib/apt/lists/* \
-    && wget --quiet https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh -O /usr/sbin/wait-for-it.sh \
-    && chmod +x /usr/sbin/wait-for-it.sh
+# Install Chromium and necessary dependencies for WhatsApp Web
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ttf-dejavu \
+    ca-certificates \
+    libstdc++ \
+    libx11 \
+    libxcomposite \
+    libxcursor \
+    libxdamage \
+    libxext \
+    libxfixes \
+    libxi \
+    libxrandr \
+    libxrender \
+    libxtst \
+    at-spi2-core
 
-RUN apt-get update -y
-RUN apt-get install zip unzip -y
+# Tell Puppeteer to skip installing Chromium since we'll use the system one
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
-RUN useradd -m bubu && echo "bubu:bubu" | chpasswd && adduser bubu sudo
+# Create a non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S bubu -u 1001
 
 WORKDIR /home/bubu/app
 
-COPY . .
+# Create session data directory
+RUN mkdir -p /home/bubu/app/session-data
 
-RUN chown -R bubu:bubu /home/bubu/app
+# Change ownership of the app directory to the bubu user
+RUN chown -R bubu:nodejs /home/bubu/app
 
-USER 1000:1000
+# Copy the entrypoint script
+COPY --chown=bubu:nodejs docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 USER bubu
+
+COPY --chown=bubu:nodejs . .
 
 RUN npm install
 
 EXPOSE 3000
 
-CMD ["node","index.js"]
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 

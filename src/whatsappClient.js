@@ -12,7 +12,7 @@ const client = new Client({
     }),
     puppeteer: {
         headless: true,
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined, // Use system Chromium if available
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined, // Use system Chromium
         args: [
             '--no-sandbox', 
             '--disable-setuid-sandbox',
@@ -21,7 +21,21 @@ const client = new Client({
             '--no-first-run',
             '--no-zygote',
             '--disable-gpu',
-            '--single-process'  // This can help with ARM64 compatibility
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows',
+            '--disable-renderer-backgrounding',
+            '--disable-ipc-flooding-protection',
+            '--disable-background-networking',
+            '--disable-extensions',
+            '--disable-default-apps',
+            '--disable-component-extensions-with-background-pages',
+            '--disable-features=TranslateUI',
+            '--disable-hang-monitor',
+            '--disable-prompt-on-repost',
+            '--disable-sync',
+            '--disable-features=TranslateUI,BlinkGenPropertyTrees'
         ]
     },
     webVersionCache: {
@@ -149,11 +163,15 @@ const sendWhatsAppMessage = async (number, message, options = {}) => {
 };
 
 const getQrCode = () => {
+    logDebug('Getting QR code', { qrCode });
     return qrCode;
 };
 
 const isQrCodeAvailable = () => {
-    return qrCode && qrCode.length > 0;
+    logDebug('Checking QR code availability', { qrCode });
+    const available = qrCode && qrCode.length > 0;
+    logDebug('QR code availability checked', { available });
+    return available;
 };
 
 module.exports = {

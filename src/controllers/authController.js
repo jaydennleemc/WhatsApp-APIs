@@ -10,7 +10,11 @@ class AuthenticateController {
             // The HTML file contains all the necessary logic to check authentication status
             // and display the appropriate content (QR code or authenticated message)
             const templatePath = path.join(__dirname, '../../index.html');
-            const html = fs.readFileSync(templatePath, 'utf8');
+            let html = fs.readFileSync(templatePath, 'utf8');
+            
+            // If we have a base path, we might need to update any hardcoded paths in the HTML
+            // This could be relevant if the HTML contains absolute paths
+            const basePath = req.basePath || '';
             
             res.send(html);
         } catch (error) {
@@ -32,10 +36,16 @@ class AuthenticateController {
     static async checkStatus(req, res, next) {
         try {
             const authenticated = await AuthService.isAuthenticated();
+            const basePath = req.basePath || '';
+            
             res.json({
                 success: true,
                 message: authenticated ? 'WhatsApp authenticated' : 'WhatsApp not authenticated',
-                data: { authenticated },
+                data: { 
+                    authenticated,
+                    // Include base path in response if needed for frontend
+                    basePath: basePath
+                },
                 timestamp: new Date().toISOString()
             });
         } catch (error) {
@@ -48,11 +58,14 @@ class AuthenticateController {
         try {
             const qrCodeAvailable = AuthService.isQrCodeAvailable();
             const qrCode = qrCodeAvailable ? AuthService.getQrCode() : null;
+            const basePath = req.basePath || '';
+            
             res.json({
                 success: true,
                 data: { 
                     qrCodeAvailable: !!qrCodeAvailable,  // Ensure it's a boolean
-                    qrCode: qrCodeAvailable ? qrCode : null
+                    qrCode: qrCodeAvailable ? qrCode : null,
+                    basePath: basePath  // Include base path for reference
                 },
                 timestamp: new Date().toISOString()
             });

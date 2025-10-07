@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const config = {
     port: process.env.PORT || 3000,
+    basePath: process.env.BASE_PATH || process.env.BUILD_BASE_PATH || '',
     whatsapp: {
         clientName: process.env.WHATSAPP_CLIENT_NAME || 'whatsapp-api',
         sessionPath: process.env.WHATSAPP_SESSION_PATH || './session-data',

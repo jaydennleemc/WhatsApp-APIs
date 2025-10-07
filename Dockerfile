@@ -1,5 +1,9 @@
 FROM node:22-alpine
 
+# Build argument for base path
+ARG BUILD_BASE_PATH=""
+ENV BUILD_BASE_PATH=${BUILD_BASE_PATH}
+
 # Install Chromium and necessary dependencies for WhatsApp Web
 RUN apk add --no-cache \
     chromium \

@@ -16,7 +16,9 @@ class MessageController {
             const responseData = { 
                 messageId: result.id._serialized,
                 phone: num,
-                message: msg
+                message: msg,
+                // Include base path in response if needed for frontend
+                basePath: req.basePath || ''
             };
             
             return sendSuccessResponse(res, 200, 'Message sent successfully', responseData);

@@ -115,9 +115,7 @@ const InitWhatsAppClient = async () => {
     
     try {
         await client.initialize();
-        writeAuthenticated({
-            authenticated: false,
-        });
+        // Don't set authentication status here - let events handle it
         logInfo('WhatsApp client initialized successfully');
     } catch (error) {
         logError('Error initializing WhatsApp client', { error: error.message });
@@ -144,8 +142,12 @@ const sendWhatsAppMessage = async (number, message, options = {}) => {
         formattedNumber = '+' + formattedNumber;
     }
     
+    // Additional WhatsApp-specific formatting: remove the '+' and add '@c.us' suffix for regular numbers
+    // WhatsApp Web JS expects numbers in the format 'phonenumber@c.us'
+    let whatsappNumber = formattedNumber.replace('+', '') + '@c.us';
+    
     try {
-        const response = await client.sendMessage(formattedNumber, message, options);
+        const response = await client.sendMessage(whatsappNumber, message, options);
         logInfo('Message sent successfully', { 
             messageId: response.id._serialized, 
             to: formattedNumber,

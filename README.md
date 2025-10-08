@@ -1,6 +1,6 @@
 # WhatsApp API Server
 
-Welcome to the WhatsApp API Server, a lightweight and efficient server application built with Node.js and Express.js. This server provides a simple interface to interact with WhatsApp services through a set of RESTful APIs using the latest whatsapp-web.js library (v1.34.1).
+Welcome to the WhatsApp API Server, a lightweight and efficient server application built with Node.js and Express.js. This server provides a simple interface to interact with WhatsApp services through a set of RESTful APIs using the latest whatsapp-web.js library.
 
 ## Features
 
@@ -15,6 +15,8 @@ Welcome to the WhatsApp API Server, a lightweight and efficient server applicati
 - **Modern UI for Authentication** with Tailwind CSS styling.
 - **Fixed Header and Footer** for improved UX.
 - **QR Code Availability Checking** to prevent confusion with example QR codes.
+- **API Key Authentication** for securing API endpoints with automatic key generation.
+- **Proper Phone Number Formatting** with WhatsApp-specific formatting for reliable message delivery.
 
 ## Project Structure
 
@@ -29,9 +31,16 @@ WhatsApp-APIs/
 ├── package.json
 ├── README.md              # This file
 ├── status.json            # Authentication status storage
-├── update_tasks.md        # Update tasks documentation
-├── structure_update_tasks.md # Structure update tasks
-# (API_Specification.md and Technical_Specification.md have been consolidated into this README.md file)
+├── .api_key               # API key storage (not tracked in git)
+├── Postman/
+│   ├── postman.json       # Postman collection
+│   └── WhatsApp-APIs.postman_environment.json # Postman environment
+├── config/
+│   ├── default.js         # Configuration management
+│   └── security.js        # Security configuration
+├── logs/                  # Log files directory
+├── node_modules/          # Dependencies
+├── session-data/          # Session storage directory
 └── src/
     ├── config/
     │   └── default.js      # Configuration management
@@ -110,12 +119,19 @@ See `.env` file for all configurable options:
 - `WHATSAPP_CLIENT_NAME`: Client session name
 - `WHATSAPP_SESSION_PATH`: Directory for session storage
 - `LOG_LEVEL`: Logging level (error, warn, info, debug)
+- `LOG_PATH`: Directory for log files
 - `RATE_LIMIT_WINDOW_MS`: Rate limit window in milliseconds
 - `RATE_LIMIT_MAX_REQUESTS`: Max requests per IP per window
+- `DEFAULT_COUNTRY_CODE`: Default country code for phone numbers
+
+### API Key Configuration
+- The API key is automatically generated on first startup and stored in `.api_key` file
+- Displayed in console on server startup for both new and existing keys
+- Required for the `/message` endpoint
 
 ## API Documentation
 
-The complete API documentation is available earlier in this README.md file under the "API Specification" section.
+The complete API documentation is available in this README.
 
 ### Base URL
 ```
@@ -127,6 +143,10 @@ http://localhost:3000
 #### GET /
 Health check endpoint.
 - **Response**: `{"success": true, "message": "WhatsApp API is working"}`
+
+#### GET /config/base-path
+Get the current base path configuration.
+- **Response**: `{"basePath": "configured_base_path"}`
 
 #### GET /auth/status
 Check WhatsApp authentication status.
@@ -140,13 +160,13 @@ Get QR code for WhatsApp authentication.
 Check if QR code is currently available.
 - **Response**: QR code availability status
 
-#### POST /messages
-Send a message to a WhatsApp number. Supports both text messages and future media file uploads.
+#### POST /message
+Send a message to a WhatsApp number. Requires API key authentication.
+- **Headers**: `X-API-Key` or `Authorization: Bearer <api_key>`
 - **Request Body**:
   - `phoneNumber` or `num` (required): Phone number in international format (e.g., +1234567890)
   - `message` or `msg` (required): Message content (max 4096 characters)
 - **Response**: Message sent confirmation with message ID
-- **Future Enhancement**: Media/file upload support planned
 
 ## Updated Features
 
@@ -177,6 +197,18 @@ Send a message to a WhatsApp number. Supports both text messages and future medi
 - Better error handling and user feedback
 - Improved visual design with WhatsApp-inspired color scheme
 
+### 5. API Key Authentication
+- Automatic API key generation on first startup
+- API key displayed in console on server startup
+- API key stored securely with restricted file permissions
+- Support for both `X-API-Key` header and `Authorization: Bearer` token
+
+### 6. WhatsApp Client Improvements
+- Fixed client initialization bug that was setting authentication to false
+- Proper phone number formatting for reliable message delivery
+- Better synchronization between in-memory and file-based authentication status
+- Improved error handling with more detailed logging
+
 ## Architecture
 
 This project follows modern Node.js and Express.js best practices:
@@ -189,9 +221,11 @@ This project follows modern Node.js and Express.js best practices:
 - **Logging**: Structured logging with Winston
 - **Session Management**: Persistent WhatsApp sessions with LocalAuth
 - **Frontend Enhancement**: Modern UI with Tailwind CSS and improved UX
+- **Security**: API key authentication with secure storage
 
 ## Security Features
 
+- API key authentication with secure storage
 - Input validation and sanitization
 - Rate limiting per IP address
 - Session persistence with secure storage
@@ -215,7 +249,7 @@ This project follows modern Node.js and Express.js best practices:
 
 ## Testing
 
-Testing framework setup is planned for future releases. See [Technical_Specification.md](Technical_Specification.md) for planned testing strategy.
+Testing framework setup is planned for future releases.
 
 ## Deployment
 
@@ -253,6 +287,11 @@ Sessions are stored in the `session-data/` directory. To reset authentication:
 1. Delete files in `session-data/` directory
 2. Restart the application
 3. Authenticate again via `/auth` endpoint
+
+### API Key Issues
+- The API key is automatically generated and displayed in the console on startup
+- For existing installations, the key is displayed as well
+- Use the key in your requests via the `X-API-Key` header or `Authorization: Bearer` token
 
 ## Contributing
 
@@ -302,7 +341,14 @@ http://localhost:3000
 
 ### API Authentication
 
-The API does not require API keys or tokens for access. However, the WhatsApp Web client needs to be authenticated via QR code scanning before sending messages.
+The API requires authentication for the message endpoint via API keys. The WhatsApp Web client needs to be authenticated via QR code scanning before sending messages.
+
+#### API Key Authentication
+- Required for `/message` endpoint
+- Can be provided via `X-API-Key` header
+- Can be provided via `Authorization: Bearer <api_key>` header
+- API key is automatically generated on first startup and displayed in console
+- API key is stored securely in `.api_key` file with restricted permissions
 
 #### Session Persistence
 - Sessions are persisted locally using `LocalAuth` strategy
@@ -327,7 +373,7 @@ The API follows consistent error response format:
 |------|-------------|
 | 200 | Success |
 | 400 | Bad Request - Invalid input parameters |
-| 401 | Unauthorized - When authentication middleware is implemented |
+| 401 | Unauthorized - Missing or invalid API key |
 | 429 | Too Many Requests - Rate limit exceeded |
 | 500 | Internal Server Error |
 
@@ -344,6 +390,18 @@ Returns API health status.
   "success": true,
   "message": "WhatsApp API is working",
   "timestamp": "2025-10-05T14:48:00.000Z"
+}
+```
+
+#### Configuration
+
+##### GET /config/base-path
+Returns the current base path configuration.
+
+**Response:**
+```json
+{
+  "basePath": "configured_base_path"
 }
 ```
 
@@ -422,29 +480,22 @@ Checks if a QR code is currently available for authentication.
 
 #### Send Message
 
-##### POST /messages
-Sends a message to a specified phone number. Supports both text messages and media files.
+##### POST /message
+Sends a message to a specified phone number. Requires API key authentication.
 
-**Request Body (Text Message):**
+**Headers:**
+- `X-API-Key: <your-api-key>` OR `Authorization: Bearer <your-api-key>`
+- `Content-Type: application/json`
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| phoneNumber or num | string | Yes | Phone number in international format (e.g., +1234567890) |
-| message or msg | string | Yes | Message content (max 4096 characters) |
-
-**Request Body (Media Message - Planned Feature):**
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| phoneNumber or num | string | Yes | Phone number in international format (e.g., +1234567890) |
-| message or msg | string | No | Optional message caption |
-| file | file | Yes | Media file (image, document, etc.) to send |
+**Request Body:**
+- `phoneNumber` or `num` (required): Phone number in international format (e.g., +1234567890)
+- `message` or `msg` (required): Message content (max 4096 characters)
 
 **Request Examples:**
 
 Text Message:
 ```json
-POST /messages
+POST /message
 {
   "phoneNumber": "+1234567890",
   "message": "Hello World"
@@ -453,7 +504,7 @@ POST /messages
 
 Alternative Text Message:
 ```json
-POST /messages
+POST /message
 {
   "num": "+1234567890",
   "msg": "Hello World"
@@ -469,21 +520,6 @@ POST /messages
     "messageId": "true_1234567890@c.us_ABCDEF0123456789",
     "phone": "+1234567890",
     "message": "Hello World"
-  },
-  "timestamp": "2025-10-05T14:48:00.000Z"
-}
-```
-
-**Future Media Support Response:**
-```json
-{
-  "success": true,
-  "message": "Media message sent successfully",
-  "data": {
-    "messageId": "true_1234567890@c.us_ABCDEF0123456789",
-    "phone": "+1234567890",
-    "message": "Check out this image!",
-    "mediaUrl": "https://server.com/media/abc123.jpg"
   },
   "timestamp": "2025-10-05T14:48:00.000Z"
 }
@@ -515,6 +551,16 @@ POST /messages
 }
 ```
 
+**Error Response - Unauthorized:**
+```json
+{
+  "success": false,
+  "error": "Unauthorized: Invalid or missing API key",
+  "code": "AUTH_001",
+  "timestamp": "2025-10-05T14:48:00.000Z"
+}
+```
+
 ### Response Format
 
 All API responses follow a consistent structure:
@@ -542,7 +588,7 @@ All API responses follow a consistent structure:
 
 #### Phone Number Validation
 - Must be in international format (e.g., +1234567890)
-- Must match regex pattern: `/^\\+?[1-9]\\d{1,14}$/`
+- Must match WhatsApp format internally after processing
 - Cannot be empty
 
 #### Message Content Validation
@@ -557,6 +603,12 @@ All API responses follow a consistent structure:
 ### Common Errors
 
 #### Authentication Required
+- **Status Code**: 401
+- **Error**: "Unauthorized: Invalid or missing API key"
+- **Cause**: Missing or invalid API key in request
+- **Resolution**: Provide valid API key in `X-API-Key` header or `Authorization: Bearer` token
+
+#### Authentication Required for WhatsApp
 - **Status Code**: 500
 - **Error**: "Client is not ready"
 - **Cause**: WhatsApp client not authenticated or session expired
@@ -583,6 +635,11 @@ All API responses follow a consistent structure:
 curl -X GET http://localhost:3000/
 ```
 
+**Configuration:**
+```bash
+curl -X GET http://localhost:3000/config/base-path
+```
+
 **Check Status:**
 ```bash
 curl -X GET http://localhost:3000/auth/status
@@ -600,17 +657,27 @@ curl -X GET http://localhost:3000/auth/qrcode/availability
 
 **Send Message:**
 ```bash
-curl -X POST http://localhost:3000/messages \\
-  -H "Content-Type: application/json" \\
+curl -X POST http://localhost:3000/message \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: YOUR_API_KEY_HERE" \
+  -d '{"phoneNumber": "+1234567890", "message": "Hello World"}'
+```
+
+**Send Message with Authorization Header:**
+```bash
+curl -X POST http://localhost:3000/message \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY_HERE" \
   -d '{"phoneNumber": "+1234567890", "message": "Hello World"}'
 ```
 
 ### Security Considerations
 
-1. **No Authentication Required**: This API has no built-in authentication. In production, authentication should be implemented.
-2. **Rate Limiting**: API is protected by rate limiting to prevent abuse.
-3. **Input Validation**: All inputs are validated to prevent injection attacks.
-4. **Session Management**: WhatsApp sessions are managed securely with the library's built-in session persistence.
+1. **API Key Required**: Message endpoint requires authentication via API key
+2. **Secure Storage**: API keys stored with restricted file permissions
+3. **Rate Limiting**: API is protected by rate limiting to prevent abuse
+4. **Input Validation**: All inputs are validated to prevent injection attacks
+5. **Session Management**: WhatsApp sessions are managed securely with the library's built-in session persistence
 
 ## Technical Specification
 
@@ -642,6 +709,7 @@ The WhatsApp API Server is designed to provide a simple RESTful interface to int
 - Follow Node.js and Express.js best practices
 - Provide an improved UI/UX with Tailwind CSS and fixed layout
 - Implement QR code availability checks to prevent user confusion
+- Secure API endpoints with automatic API key generation
 
 ### Architecture
 
@@ -695,18 +763,21 @@ Client Request → Middleware (Validation/Logging) → Controller → Service �
 #### Health Check
 - **GET /** - Returns API health status
 
+#### Configuration
+- **GET /config/base-path** - Returns current base path configuration
+
 #### Authentication Endpoints
 - **GET /auth/status** - Check WhatsApp authentication status
 - **GET /auth/qrcode** - Get QR code for WhatsApp authentication
 - **GET /auth/qrcode/availability** - Check if QR code is currently available
 
 #### Messaging Endpoints
-- **POST /messages** - Send a message to a WhatsApp number
+- **POST /message** - Send a message to a WhatsApp number
+  - Requires API key authentication via `X-API-Key` header or `Authorization: Bearer` token
   - Supports both request body parameters: `phoneNumber` or `num` for phone number
   - Supports both request body parameters: `message` or `msg` for message content
   - Improved RESTful design using POST method for creating messages
-  - Prepared for future file/media upload capability
-  - Supports both text messages and planned media file support (images, documents)
+  - Proper WhatsApp-specific phone number formatting (e.g., +85266433253 becomes 85266433253@c.us)
 
 ### Core Components
 
@@ -716,13 +787,14 @@ Client Request → Middleware (Validation/Logging) → Controller → Service �
 - Loads environment variables using dotenv
 - Configures Express application with middleware
 - Sets up routes and error handling
-- Initializes WhatsApp client
+- Initializes WhatsApp client with proper API key display
 - Starts HTTP server
 
 **Key Features**:
 - Configuration-driven server setup
 - Middleware pipeline initialization
 - Centralized error handling
+- Automatic API key generation and display
 - Proper application lifecycle management
 
 #### 2. WhatsApp Client (whatsappClient.js)
@@ -731,8 +803,9 @@ Client Request → Middleware (Validation/Logging) → Controller → Service �
 - Session management with LocalAuth
 - Event handling for authentication and messages
 - Error handling and retry logic
-- Message sending with validation
+- Message sending with proper phone number formatting
 - Connection state management
+- Fixed client initialization bug that was setting authentication to false
 
 **Key Features**:
 - Persistent session storage
@@ -741,6 +814,7 @@ Client Request → Middleware (Validation/Logging) → Controller → Service �
 - Proper client initialization and state management
 - Message acknowledgment tracking
 - QR code availability tracking
+- WhatsApp-specific phone number formatting
 
 #### 3. Configuration Management (config/default.js)
 
@@ -775,6 +849,12 @@ Client Request → Middleware (Validation/Logging) → Controller → Service �
 - Performance timing
 - Metadata collection
 - Integration with Winston logging
+
+##### Authentication (middleware/auth.js)
+- API key validation
+- Support for both `X-API-Key` header and `Authorization: Bearer` token
+- Secure API key storage and retrieval
+- Proper error responses for unauthorized requests
 
 ##### Validation (middleware/validation.js)
 - Express-validator result processing
@@ -811,6 +891,7 @@ Client Request → Middleware (Validation/Logging) → Controller → Service �
 - Service integration
 - Error propagation to middleware
 - Support for multiple parameter names (phoneNumber/num, message/msg)
+- API key authentication integration
 
 #### 7. Route Definitions (routes/apiRoutes.js)
 
@@ -821,6 +902,7 @@ Client Request → Middleware (Validation/Logging) → Controller → Service �
 - Response formatting
 - Support for both legacy and new parameter names for backward compatibility
 - New routes for QR code availability checks
+- API key authentication protection for message endpoint
 
 ### Configuration
 
@@ -853,7 +935,9 @@ The application uses environment variables for configuration with the following 
 #### Authentication
 - WhatsApp Web authentication via QR code scanning
 - Session persistence with LocalAuth strategy
-- No API authentication currently implemented (future enhancement)
+- API key authentication for message endpoint
+- Automatic API key generation on first startup
+- API key stored with restricted file permissions
 
 #### Input Validation
 - Express-validator for parameter validation

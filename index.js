@@ -20,6 +20,7 @@ async function initializeApiKey() {
     if (apiKeyExists) {
       console.log('Existing API key detected');
       console.log(`API key file located at: ${require('./config/security').API_KEY_FILE_PATH}`);
+      console.log(`API key: ${apiKey}`); // Show the existing API key value
     } else {
       console.log('API key generated successfully');
       console.log(`API key: ${apiKey}`); // Show full key as required by user on generation

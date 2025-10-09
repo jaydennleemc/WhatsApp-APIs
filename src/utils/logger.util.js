@@ -9,36 +9,28 @@ if (!fs.existsSync(config.logging.path)) {
 }
 
 // Define log format
-const logFormat = winston.format.combine(
-    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    winston.format.errors({ stack: true }),
-    winston.format.splat(),
-    winston.format.json()
-);
+const logFormat = winston.format.combine(winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), winston.format.errors({ stack: true }), winston.format.splat(), winston.format.json());
 
 // Define transports (where to log)
 const transports = [
-    new winston.transports.File({ 
-        filename: path.join(config.logging.path, 'error.log'), 
+    new winston.transports.File({
+        filename: path.join(config.logging.path, 'error.log'),
         level: 'error',
         maxsize: 5242880, // 5MB
-        maxFiles: 5
+        maxFiles: 5,
     }),
-    new winston.transports.File({ 
+    new winston.transports.File({
         filename: path.join(config.logging.path, 'combined.log'),
         maxsize: 5242880, // 5MB
-        maxFiles: 5
-    })
+        maxFiles: 5,
+    }),
 ];
 
 // In development, also log to console
 if (process.env.NODE_ENV !== 'production') {
     transports.push(
         new winston.transports.Console({
-            format: winston.format.combine(
-                winston.format.colorize(),
-                winston.format.simple()
-            )
+            format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
         })
     );
 }
@@ -83,5 +75,5 @@ module.exports = {
     logInfo,
     logError,
     logWarn,
-    logDebug
+    logDebug,
 };

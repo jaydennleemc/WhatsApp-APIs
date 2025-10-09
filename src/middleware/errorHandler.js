@@ -33,13 +33,20 @@ const errorHandler = (err, req, res, next) => {
 
     // Mongoose validation error
     if (err.name === 'ValidationError') {
-        const message = Object.values(err.errors).map(val => val.message).join(', ');
+        const message = Object.values(err.errors)
+            .map((val) => val.message)
+            .join(', ');
         error = new AppError(message, 400, 'fail', 'VALIDATION_ERROR');
     }
 
     // Validation errors from express-validator
     if (err.name === 'ValidationError' || err.isArray) {
-        const message = err.array ? err.array().map(e => e.msg).join(', ') : err.message;
+        const message = err.array
+            ? err
+                  .array()
+                  .map((e) => e.msg)
+                  .join(', ')
+            : err.message;
         error = new AppError(message, 400, 'fail', 'VALIDATION_ERROR');
     }
 
@@ -72,9 +79,9 @@ const errorHandler = (err, req, res, next) => {
         message: error.message || 'Server Error',
         error: {
             code: error.code || 'INTERNAL_ERROR',
-            message: error.message || 'An internal server error occurred'
+            message: error.message || 'An internal server error occurred',
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
     };
 
     // Add stack trace in development environment

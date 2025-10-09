@@ -11,7 +11,7 @@ class AuthService {
     static getQrCode() {
         try {
             logInfo('Retrieving QR code for authentication');
-            
+
             // Get QR code from the client
             const qrCode = clientGetQrCode();
             if (!qrCode) {
@@ -20,15 +20,11 @@ class AuthService {
             return qrCode;
         } catch (error) {
             logError('Error getting QR code', { error: error.message });
-            
+
             if (error instanceof AppError) {
                 throw error;
             } else {
-                throw new AppError(
-                    error.message || 'Failed to get QR code for authentication',
-                    500,
-                    'error'
-                );
+                throw new AppError(error.message || 'Failed to get QR code for authentication', 500, 'error');
             }
         }
     }
@@ -45,19 +41,15 @@ class AuthService {
             return authenticated;
         } catch (error) {
             logError('Error checking authentication status', { error: error.message });
-            
+
             if (error instanceof AppError) {
                 throw error;
             } else {
-                throw new AppError(
-                    error.message || 'Failed to check authentication status',
-                    500,
-                    'error'
-                );
+                throw new AppError(error.message || 'Failed to check authentication status', 500, 'error');
             }
         }
     }
-    
+
     /**
      * Check if QR code is currently available
      * @returns {boolean} QR code availability status
@@ -70,15 +62,11 @@ class AuthService {
             return available;
         } catch (error) {
             logError('Error checking QR code availability', { error: error.message });
-            
+
             if (error instanceof AppError) {
                 throw error;
             } else {
-                throw new AppError(
-                    error.message || 'Failed to check QR code availability',
-                    500,
-                    'error'
-                );
+                throw new AppError(error.message || 'Failed to check QR code availability', 500, 'error');
             }
         }
     }

@@ -9,9 +9,9 @@ const MessageController = require('../controllers/message.controller');
 
 // Configuration endpoint for base path
 router.get('/config/base-path', (req, res) => {
-  // Return the currently configured base path
-  const basePath = req.basePath || '';
-  res.json({ basePath });
+    // Return the currently configured base path
+    const basePath = req.basePath || '';
+    res.json({ basePath });
 });
 
 // Health check and authentication endpoints
@@ -22,13 +22,6 @@ router.get('/auth/qrcode/availability', AuthenticateController.checkQrCodeAvaila
 
 // Messaging endpoints - protected with API key authentication
 // Use upload middleware to handle file uploads and validation
-router.post('/message', 
-    apiKeyAuth, 
-    uploadMedia, 
-    validateMediaContent, 
-    sendMessageValidation, 
-    handleValidationErrors, 
-    MessageController.sendMessage
-);
+router.post('/message', apiKeyAuth, uploadMedia, validateMediaContent, sendMessageValidation, handleValidationErrors, MessageController.sendMessage);
 
 module.exports = router;

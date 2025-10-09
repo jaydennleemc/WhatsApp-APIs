@@ -7,7 +7,7 @@ const sendErrorResponse = (res, statusCode, message, errors = null) => {
         success: false,
         message,
         ...(errors && { errors }),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
     });
 };
 
@@ -17,11 +17,11 @@ const sendSuccessResponse = (res, statusCode, message, data = null) => {
         success: true,
         message,
         ...(data && { data }),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
     });
 };
 
 module.exports = {
     sendErrorResponse,
-    sendSuccessResponse
+    sendSuccessResponse,
 };

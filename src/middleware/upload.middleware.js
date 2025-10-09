@@ -12,12 +12,21 @@ const upload = multer({
     fileFilter: (req, file, cb) => {
         // Validate MIME types for supported media types
         const allowedMimeTypes = [
-            'image/jpeg', 'image/png', 'image/gif', 'image/webp', // images
-            'video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/mpeg', // videos
-            'application/pdf', 'application/msword', 'application/vnd.ms-excel', // documents
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp', // images
+            'video/mp4',
+            'video/quicktime',
+            'video/x-msvideo',
+            'video/mpeg', // videos
+            'application/pdf',
+            'application/msword',
+            'application/vnd.ms-excel', // documents
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
-            'text/plain', 'application/zip'
+            'text/plain',
+            'application/zip',
         ];
 
         // Check if the file type is allowed
@@ -26,7 +35,7 @@ const upload = multer({
         } else {
             cb(new Error(`Unsupported file type: ${file.mimetype}. Supported types: images, videos, documents.`), false);
         }
-    }
+    },
 });
 
 // Middleware to handle single file uploads for media messages
@@ -42,7 +51,7 @@ const validateMediaContent = (req, res, next) => {
             data: req.file.buffer.toString('base64'),
             filename: req.file.originalname,
             mimetype: req.file.mimetype,
-            size: req.file.size
+            size: req.file.size,
         };
 
         // Validate file size based on media type
@@ -52,9 +61,9 @@ const validateMediaContent = (req, res, next) => {
                 message: `File size exceeds limit for ${req.mediaData.type} type`,
                 error: {
                     code: 'FILE_SIZE_LIMIT_EXCEEDED',
-                    message: `File size of ${req.file.size} bytes exceeds limit`
+                    message: `File size of ${req.file.size} bytes exceeds limit`,
                 },
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             });
         }
     }
@@ -67,9 +76,9 @@ const validateMediaContent = (req, res, next) => {
                 message: 'Media object must include type, data, filename, and mimetype',
                 error: {
                     code: 'INVALID_MEDIA_FORMAT',
-                    message: 'Missing required fields in media object'
+                    message: 'Missing required fields in media object',
                 },
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             });
         }
 
@@ -80,9 +89,9 @@ const validateMediaContent = (req, res, next) => {
                 message: `Base64 data size exceeds limit for ${req.body.media.type} type`,
                 error: {
                     code: 'FILE_SIZE_LIMIT_EXCEEDED',
-                    message: 'Base64 data size exceeds platform limits'
+                    message: 'Base64 data size exceeds platform limits',
                 },
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             });
         }
     }
@@ -121,5 +130,5 @@ function validateFileSize(mediaData) {
 
 module.exports = {
     uploadMedia,
-    validateMediaContent
+    validateMediaContent,
 };

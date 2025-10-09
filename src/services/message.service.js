@@ -16,18 +16,18 @@ class MessageService {
      */
     static async sendWhatsAppMessage(number, message, media = undefined, caption = '', options = {}) {
         try {
-            logInfo('Attempting to send WhatsApp message', { 
-                number, 
+            logInfo('Attempting to send WhatsApp message', {
+                number,
                 messageLength: message?.length || 0,
                 hasMedia: !!media,
                 captionLength: caption?.length || 0,
-                options: options || {}
+                options: options || {},
             });
-            
+
             if (!number) {
                 throw new AppError('Number is required', 400, 'fail');
             }
-            
+
             // For now, we require either a message or media to be provided
             if (!message && !media) {
                 throw new AppError('Message content or media file is required', 400, 'fail');
@@ -41,33 +41,29 @@ class MessageService {
                 // Handle text message with options
                 result = await clientSendWhatsAppMessage(number, message, options);
             }
-            
-            logInfo('WhatsApp message sent successfully', { 
+
+            logInfo('WhatsApp message sent successfully', {
                 messageId: result.id._serialized,
                 recipient: number,
-                type: media ? media.type : 'text'
+                type: media ? media.type : 'text',
             });
-            
+
             return result;
         } catch (error) {
             // Log the error for debugging
-            logError('Error sending WhatsApp message', { 
-                error: error.message, 
-                number, 
+            logError('Error sending WhatsApp message', {
+                error: error.message,
+                number,
                 message: message ? message.substring(0, 50) + '...' : null,
                 hasMedia: !!media,
-                caption: caption ? caption.substring(0, 50) + '...' : null
+                caption: caption ? caption.substring(0, 50) + '...' : null,
             });
-            
+
             // Re-throw the error to be handled by the controller
             if (error instanceof AppError) {
                 throw error;
             } else {
-                throw new AppError(
-                    error.message || 'Failed to send WhatsApp message',
-                    500,
-                    'error'
-                );
+                throw new AppError(error.message || 'Failed to send WhatsApp message', 500, 'error');
             }
         }
     }
@@ -91,36 +87,32 @@ class MessageService {
             // Create MessageMedia object from the media content
             const messageMedia = new MessageMedia(
                 mediaContent.mimetype,
-                mediaContent.data,  // This should be the base64 data
+                mediaContent.data, // This should be the base64 data
                 mediaContent.filename
             );
 
             // Prepare message options
             const messageOptions = {
                 caption: caption || undefined,
-                ...options // Spread additional options
+                ...options, // Spread additional options
             };
 
             // Send the media message via the client
             const result = await clientSendWhatsAppMedia(number, messageMedia, messageOptions);
-            
+
             return result;
         } catch (error) {
             logError('Error sending media message', {
                 error: error.message,
                 number,
                 mediaType: mediaContent?.type,
-                filename: mediaContent?.filename
+                filename: mediaContent?.filename,
             });
-            
+
             if (error instanceof AppError) {
                 throw error;
             } else {
-                throw new AppError(
-                    error.message || 'Failed to send media message',
-                    500,
-                    'error'
-                );
+                throw new AppError(error.message || 'Failed to send media message', 500, 'error');
             }
         }
     }

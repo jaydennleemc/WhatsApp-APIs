@@ -132,6 +132,7 @@ tmp/
 temp/
 *.tmp
 *.temp
+uploads/
 
 # npm cache
 node_modules/.bin/

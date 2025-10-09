@@ -1,6 +1,7 @@
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const { writeAuthenticated } = require('./utils/common.util');
 const { logInfo, logError, logDebug } = require('./utils/logger.util');
+const { cleanupTempFile } = require('./utils/media.utils');
 
 let clientReady = false;
 let qrCode = '';
@@ -164,6 +165,59 @@ const sendWhatsAppMessage = async (number, message, options = {}) => {
     }
 };
 
+const sendWhatsAppMedia = async (number, messageMedia, options = {}) => {
+    if (!clientReady) {
+        const error = new Error('Client is not ready');
+        logError('Failed to send media - client not ready', { number, mediaType: messageMedia.mimetype });
+        throw error;
+    }
+    
+    // Validate and format the phone number
+    let formattedNumber = number.toString().replace(/\D/g, ''); // Remove non-digit characters
+    
+    // Ensure the number starts with the international prefix (+)
+    if (!formattedNumber.startsWith('+')) {
+        // Add '+' prefix if not present
+        formattedNumber = '+' + formattedNumber;
+    }
+    
+    // Additional WhatsApp-specific formatting: remove the '+' and add '@c.us' suffix for regular numbers
+    // WhatsApp Web JS expects numbers in the format 'phonenumber@c.us'
+    let whatsappNumber = formattedNumber.replace('+', '') + '@c.us';
+    
+    // Special handling for video files to prevent evaluation errors
+    if (messageMedia.mimetype && messageMedia.mimetype.startsWith('video/')) {
+        // For video files, we might need to add specific options
+        options.sendMediaAsDocument = options.sendMediaAsDocument || false; // Default to sending as video
+    }
+    
+    try {
+        const response = await client.sendMessage(whatsappNumber, messageMedia, options);
+        logInfo('Media sent successfully', { 
+            messageId: response.id._serialized, 
+            to: formattedNumber,
+            mediaType: messageMedia.mimetype,
+            filename: messageMedia.filename
+        });
+        return response;
+    } catch (error) {
+        logError('Error sending WhatsApp media', { 
+            error: error.message, 
+            number: formattedNumber,
+            mediaType: messageMedia.mimetype,
+            filename: messageMedia.filename,
+            stack: error.stack
+        });
+        
+        // Provide more specific error message for evaluation failures
+        if (error.message && error.message.includes('Evaluation failed')) {
+            throw new Error(`Failed to send media: ${error.message}. This error often occurs with video files that use unsupported codecs or have other format incompatibilities. Ensure your video uses H.264 codec in an MP4 container.`);
+        }
+        
+        throw error;
+    }
+};
+
 const getQrCode = () => {
     logDebug('Getting QR code', { qrCode });
     return qrCode;
@@ -179,6 +233,7 @@ const isQrCodeAvailable = () => {
 module.exports = {
     InitWhatsAppClient,
     sendWhatsAppMessage,
+    sendWhatsAppMedia,
     getQrCode,
     isQrCodeAvailable,
 };

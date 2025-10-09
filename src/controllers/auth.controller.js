@@ -42,9 +42,7 @@ class AuthenticateController {
                 success: true,
                 message: authenticated ? 'WhatsApp authenticated' : 'WhatsApp not authenticated',
                 data: { 
-                    authenticated,
-                    // Include base path in response if needed for frontend
-                    basePath: basePath
+                    authenticated
                 },
                 timestamp: new Date().toISOString()
             });
@@ -65,7 +63,6 @@ class AuthenticateController {
                 data: { 
                     qrCodeAvailable: !!qrCodeAvailable,  // Ensure it's a boolean
                     qrCode: qrCodeAvailable ? qrCode : null,
-                    basePath: basePath  // Include base path for reference
                 },
                 timestamp: new Date().toISOString()
             });

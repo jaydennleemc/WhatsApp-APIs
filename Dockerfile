@@ -35,8 +35,9 @@ RUN addgroup -g 1001 -S nodejs && \
 
 WORKDIR /home/bubu/app
 
-# Create session data directory
-RUN mkdir -p /home/bubu/app/session-data
+# Create session data and uploads directories
+RUN mkdir -p /home/bubu/app/session-data && \
+    mkdir -p /home/bubu/app/uploads
 
 # Change ownership of the app directory to the bubu user
 RUN chown -R bubu:nodejs /home/bubu/app

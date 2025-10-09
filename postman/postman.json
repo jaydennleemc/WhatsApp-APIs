@@ -1,10 +1,9 @@
 {
   "info": {
     "_postman_id": "whatsapp-api-collection",
-    "name": "WhatsApp API Server",
-    "description": "APIs for WhatsApp (non official) - A lightweight and efficient server application built with Node.js and Express.js",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "version": "1.0.0"
+    "name": "WhatsApp API",
+    "description": "Postman collection for the WhatsApp API server",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
@@ -14,85 +13,31 @@
         "header": [],
         "url": {
           "raw": "{{base_url}}/",
-          "host": ["{{base_url}}"],
+          "host": [
+            "{{base_url}}"
+          ],
           "path": [""]
         }
       },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Health Check API\", function () {",
-              "    pm.response.to.have.status(200);",
-              "    var jsonData = pm.response.json();",
-              "    pm.expect(jsonData.success).to.be.true;",
-              "    pm.expect(jsonData.message).to.include(\"WhatsApp API is working\");",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ]
+      "response": []
     },
     {
-      "name": "Configuration",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{base_url}}/config/base-path",
-          "host": ["{{base_url}}"],
-          "path": ["config", "base-path"]
-        }
-      },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Configuration API\", function () {",
-              "    pm.response.to.have.status(200);",
-              "    var jsonData = pm.response.json();",
-              "    pm.expect(jsonData).to.have.property('basePath');",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Authentication Status",
+      "name": "Check Authentication Status",
       "request": {
         "method": "GET",
         "header": [],
         "url": {
           "raw": "{{base_url}}/auth/status",
-          "host": ["{{base_url}}"],
-          "path": ["auth", "status"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "status"
+          ]
         }
       },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Authentication Status\", function () {",
-              "    pm.response.to.have.status(200);",
-              "    var jsonData = pm.response.json();",
-              "    pm.expect(jsonData.success).to.be.true;",
-              "    pm.expect(jsonData).to.have.property('data');",
-              "    pm.expect(jsonData.data).to.have.property('authenticated');",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ]
+      "response": []
     },
     {
       "name": "Get QR Code",
@@ -101,27 +46,16 @@
         "header": [],
         "url": {
           "raw": "{{base_url}}/auth/qrcode",
-          "host": ["{{base_url}}"],
-          "path": ["auth", "qrcode"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "qrcode"
+          ]
         }
       },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Get QR Code\", function () {",
-              "    pm.response.to.have.status(200);",
-              "    // QR code is returned as plain text",
-              "    var responseText = pm.response.text();",
-              "    pm.expect(responseText).to.not.be.empty;",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ]
+      "response": []
     },
     {
       "name": "Check QR Code Availability",
@@ -130,36 +64,27 @@
         "header": [],
         "url": {
           "raw": "{{base_url}}/auth/qrcode/availability",
-          "host": ["{{base_url}}"],
-          "path": ["auth", "qrcode", "availability"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "qrcode",
+            "availability"
+          ]
         }
       },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"QR Code Availability\", function () {",
-              "    pm.response.to.have.status(200);",
-              "    var jsonData = pm.response.json();",
-              "    pm.expect(jsonData.success).to.be.true;",
-              "    pm.expect(jsonData).to.have.property('data');",
-              "    pm.expect(jsonData.data).to.have.property('qrCodeAvailable');",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ]
+      "response": []
     },
     {
-      "name": "Send Message",
+      "name": "Send Text Message",
       "request": {
         "method": "POST",
         "header": [
           {
             "key": "Content-Type",
+            "name": "Content-Type",
+            "type": "text",
             "value": "application/json"
           },
           {
@@ -178,33 +103,168 @@
         },
         "url": {
           "raw": "{{base_url}}/message",
-          "host": ["{{base_url}}"],
-          "path": ["message"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "message"
+          ]
         }
       },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Send Message\", function () {",
-              "    if (pm.response.code === 200) {",
-              "        var jsonData = pm.response.json();",
-              "        pm.expect(jsonData.success).to.be.true;",
-              "        pm.expect(jsonData.message).to.equal(\"Message sent successfully\");",
-              "        pm.expect(jsonData).to.have.property('data');",
-              "        pm.expect(jsonData.data).to.have.property('messageId');",
-              "        pm.expect(jsonData.data).to.have.property('phone');",
-              "    } else {",
-              "        pm.expect(pm.response.code).to.equal(401); // If API key is not set",
-              "    }",
-              "});"
-            ],
-            "type": "text/javascript"
+      "response": []
+    },
+    {
+      "name": "Send Image Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
           }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "phoneNumber",
+              "value": "+1234567890",
+              "description": "Recipient phone number",
+              "type": "text"
+            },
+            {
+              "key": "media",
+              "type": "file",
+              "src": "/path/to/image/file",
+              "description": "Image file to send"
+            },
+            {
+              "key": "caption",
+              "value": "Check out this photo!",
+              "description": "Caption for the image",
+              "type": "text"
+            },
+            {
+              "key": "messageType",
+              "value": "image",
+              "description": "Type of media being sent",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/message",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "message"
+          ]
         }
-      ]
+      },
+      "response": []
+    },
+    {
+      "name": "Send Video Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "phoneNumber",
+              "value": "+1234567890",
+              "description": "Recipient phone number",
+              "type": "text"
+            },
+            {
+              "key": "media",
+              "type": "file",
+              "src": "/path/to/video/file",
+              "description": "Video file to send"
+            },
+            {
+              "key": "caption",
+              "value": "Check out this video!",
+              "description": "Caption for the video",
+              "type": "text"
+            },
+            {
+              "key": "messageType",
+              "value": "video",
+              "description": "Type of media being sent",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/message",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "message"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Send Attachment Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "phoneNumber",
+              "value": "+1234567890",
+              "description": "Recipient phone number",
+              "type": "text"
+            },
+            {
+              "key": "media",
+              "type": "file",
+              "src": "/path/to/document/file",
+              "description": "Document file to send"
+            },
+            {
+              "key": "caption",
+              "value": "Please review this document",
+              "description": "Caption for the document",
+              "type": "text"
+            },
+            {
+              "key": "messageType",
+              "value": "document",
+              "description": "Type of media being sent",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/message",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "message"
+          ]
+        }
+      },
+      "response": []
     }
   ],
   "event": [
@@ -225,17 +285,29 @@
   ],
   "variable": [
     {
-      "id": "base_url",
       "key": "base_url",
       "value": "http://localhost:3000",
       "type": "string"
     },
     {
-      "id": "api_key",
       "key": "api_key",
       "value": "",
-      "type": "string",
-      "description": "API key for authentication. Get this from your .api_key file in the project root."
+      "type": "string"
+    },
+    {
+      "key": "base64_image_data",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "base64_video_data",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "base64_document_data",
+      "value": "",
+      "type": "string"
     }
   ]
 }

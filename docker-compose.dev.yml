@@ -1,0 +1,18 @@
+services:
+  whatsapp-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Development-specific overrides
+    volumes:
+      - ./.dev/session-data:/home/bubu/app/session-data
+      - ./.dev/logs:/home/bubu/app/logs
+    environment:
+      - NODE_ENV=development
+      - PORT=${PORT:-3000}
+      - WHATSAPP_CLIENT_NAME=${WHATSAPP_CLIENT_NAME:-whatsapp-api-dev}
+      - LOG_LEVEL=${LOG_LEVEL:-debug}
+      - DEFAULT_COUNTRY_CODE=${DEFAULT_COUNTRY_CODE:-852}
+      - RATE_LIMIT_WINDOW_MS=${RATE_LIMIT_WINDOW_MS:-900000}
+      - RATE_LIMIT_MAX_REQUESTS=${RATE_LIMIT_MAX_REQUESTS:-100}
+    command: npm run dev  # Use development script with nodemon

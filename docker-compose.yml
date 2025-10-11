@@ -19,8 +19,10 @@ services:
       - RATE_LIMIT_MAX_REQUESTS=${RATE_LIMIT_MAX_REQUESTS:-100}
     # Volumes to persist data across container restarts
     volumes:
-      - ./session-data:/home/bubu/app/session-data  # Maintain WhatsApp sessions
-      - ./logs:/home/bubu/app/logs                  # Persist logs
+      - session-data:/home/bubu/app/session-data    # Maintain WhatsApp sessions
+      - logs:/home/bubu/app/logs                    # Persist logs
+    # Run as the bubu user (UID 1001) to match file ownership
+    user: "1001:1001"
     restart: unless-stopped
     # Health check to ensure the application is running properly
     healthcheck:
@@ -38,6 +40,4 @@ networks:
 
 volumes:
   session-data:
-    driver: local
   logs:
-    driver: local

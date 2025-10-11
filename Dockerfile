@@ -37,10 +37,15 @@ WORKDIR /home/bubu/app
 
 # Create session data and uploads directories
 RUN mkdir -p /home/bubu/app/session-data && \
-    mkdir -p /home/bubu/app/uploads
+    mkdir -p /home/bubu/app/uploads && \
+    mkdir -p /home/bubu/app/logs
 
 # Change ownership of the app directory to the bubu user
 RUN chown -R bubu:nodejs /home/bubu/app
+
+# Set proper permissions for the session data and logs directories
+RUN chown bubu:nodejs /home/bubu/app/session-data && \
+    chown bubu:nodejs /home/bubu/app/logs
 
 # Copy the entrypoint script
 COPY --chown=bubu:nodejs docker-entrypoint.sh /usr/local/bin/
@@ -51,6 +56,9 @@ USER bubu
 COPY --chown=bubu:nodejs . .
 
 RUN npm install
+
+# Create initial status.json file
+RUN echo '{"authenticated": false}' > /home/bubu/app/status.json
 
 EXPOSE 3000
 

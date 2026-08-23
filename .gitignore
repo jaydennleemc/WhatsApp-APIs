@@ -120,10 +120,6 @@ out/
 # Chrome debugger
 .chromium
 
-# Testing
-test/
-tests/
-
 # Session data for WhatsApp
 session-data/
 
